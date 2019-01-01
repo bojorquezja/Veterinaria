@@ -1,0 +1,16 @@
+<component name="libraryTable">
+  <library name="org.assertj:assertj-swing-junit:3.8.0" type="repository">
+    <properties maven-id="org.assertj:assertj-swing-junit:3.8.0" />
+    <CLASSES>
+      <root url="jar://C:/Java/librerias/assertj-swing-junit-3.8.0.jar!/" />
+      <root url="jar://C:/Java/librerias/junit-4.12.jar!/" />
+      <root url="jar://C:/Java/librerias/hamcrest-core-1.3.jar!/" />
+      <root url="jar://C:/Java/librerias/assertj-swing-3.8.0.jar!/" />
+      <root url="jar://C:/Java/librerias/assertj-core-3.8.0.jar!/" />
+      <root url="jar://C:/Java/librerias/fest-util-1.2.5.jar!/" />
+      <root url="jar://C:/Java/librerias/fest-reflect-1.4.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
