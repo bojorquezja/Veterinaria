@@ -173,11 +173,12 @@ public class DetallePedidoEdita extends JDialog implements EditaJDialog {
         tfl1.setText(String.valueOf(((Pedido) otrosParam[0]).getCodigo()));
         entTfl1 = ((Pedido) otrosParam[0]);
         tfl2.setDocument(new MascaraTextField("", 0, 50, TipoMascaraTextField.SOLO_NUMEROS_ENTEROS));
+        tfl3.setEditable(false);
         tfl4.setDocument(new MascaraTextField("", 0, 255, TipoMascaraTextField.TODO));
         tfl5.setDocument(new MascaraTextField("0.0", 1, 50, TipoMascaraTextField.SOLO_NUMEROS_DECIMALES));
         tfl6.setDocument(new MascaraTextField("0.0", 1, 50, TipoMascaraTextField.SOLO_NUMEROS_DECIMALES));
         tfl7.setDocument(new MascaraTextField("0.0", 1, 50, TipoMascaraTextField.SOLO_NUMEROS_DECIMALES));
-
+        tfl7.setEditable(false);
     }
 
     @Override
@@ -206,12 +207,11 @@ public class DetallePedidoEdita extends JDialog implements EditaJDialog {
         if (respuesta != null){
             EntidadRepository rep = new EntidadRepositoryRepositoryBaseDatos();
             Producto ent = rep.read( Producto.class, (String) respuesta);
-            tfl3.setText(ent.getDescripcion());
+            tfl3.setText(ent.getCodigo() + "-" + ent.getDescripcion());
             entTfl3 = ent;
             if (tfl4.getText().length() == 0){
                 tfl4.setText(ent.getDescripcion());
             }
-
         }
     }
 
@@ -225,12 +225,10 @@ public class DetallePedidoEdita extends JDialog implements EditaJDialog {
     @Override
     public void accesoControlResto(boolean permite){
         //MODIFICAR
-        tfl3.setEditable(false);
         btntfl3.setEnabled(permite);
         tfl4.setEditable(permite);
         tfl5.setEditable(permite);
         tfl6.setEditable(permite);
-        tfl7.setEditable(false);
     }
 
     @Override
@@ -241,7 +239,7 @@ public class DetallePedidoEdita extends JDialog implements EditaJDialog {
         //item, producto, descripcion, precioSoles, cantidad, totalSoles, pedido
         if (ent != null) {
             tfl2.setText(String.valueOf(ent.getItem()));
-            tfl3.setText(ent.getProducto().getDescripcion());
+            tfl3.setText(ent.getProducto().getCodigo() + "-" + ent.getProducto().getDescripcion());
             entTfl3 = ent.getProducto();
             tfl4.setText(ent.getDescripcion());
             tfl5.setText(String.valueOf( ent.getPrecioSoles() ));
@@ -263,7 +261,6 @@ public class DetallePedidoEdita extends JDialog implements EditaJDialog {
 
         switch(modoEdicion){
             case INSERT:
-
                 rep = new EntidadRepositoryRepositoryBaseDatos();
                 sqlWhere = "(codpedido = ? ) ";
                 param = new Object[]{((Pedido) entTfl1).getCodigo() };
@@ -284,6 +281,9 @@ public class DetallePedidoEdita extends JDialog implements EditaJDialog {
                 break;
         }
         //para todos los casos
+        if (tfl3.getText().length() ==0){
+            return "Seleccione un producto";
+        }
 
         if (tfl4.getText().length() ==0){
             return "descripcion esta en blanco";

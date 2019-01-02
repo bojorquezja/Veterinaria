@@ -1,8 +1,7 @@
 package main.java.com.wonen.veterinaria.views;
 
 import com.github.lgooddatepicker.components.DatePicker;
-import main.java.com.wonen.veterinaria.model.Cliente;
-import main.java.com.wonen.veterinaria.model.TipoCliente;
+import main.java.com.wonen.veterinaria.model.*;
 import main.java.com.wonen.veterinaria.repository.EntidadRepository;
 import main.java.com.wonen.veterinaria.repository.EntidadRepositoryRepositoryBaseDatos;
 import main.java.com.wonen.veterinaria.service.Conversion;
@@ -16,17 +15,31 @@ import java.awt.event.*;
 import java.time.LocalDate;
 import java.util.List;
 
-public class ClienteEdita extends JDialog implements EditaJDialog {
+public class PedidoEdita extends JDialog implements EditaJDialog {
     private JPanel contentPane;
     private JButton btn8;
     private JButton btn9;
     private JTextField tfl1;
     private JTextField tfl2;
+    private JButton btntfl2;
+    private Object entTfl2;
     private JTextField tfl4;
     private JTextField tfl3;
+    private JButton btntfl3;
+    private Object entTfl3;
     private JTextField tfl5;
+    private JTextField tfl6;
     private JComboBox cbo1;
+    private JComboBox cbo2;
+    private JComboBox cbo3;
     private DatePicker dtp1;
+    private DatePicker dtp2;
+    private DatePicker dtp3;
+    private DatePicker dtp4;
+    private DatePicker dtp5;
+    private JTabbedPane tabbedPane1;
+
+
 
     private ModoEdicion modoEdicion;   //INSERT, UPDATE, DELETE, READ_ONLY
     private Object pkEntidad;     //entidad para modoEdicion
@@ -50,7 +63,7 @@ public class ClienteEdita extends JDialog implements EditaJDialog {
     }
 
 
-    public ClienteEdita() {
+    public PedidoEdita() {
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(btn8);
@@ -85,10 +98,11 @@ public class ClienteEdita extends JDialog implements EditaJDialog {
 
     @Override
     public String valoresIniciales() {
+        //MODIFICA
         this.cargaLimpiaControles();
         switch(modoEdicion){
             case INSERT:
-                this.accesoControlPK(true);
+                this.accesoControlPK(false);
                 this.accesoControlResto(true);
                 this.setTitle("Nuevo registro");
                 btn8.setText("Insertar");
@@ -134,20 +148,40 @@ public class ClienteEdita extends JDialog implements EditaJDialog {
     @Override
     public void cargaLimpiaControles(){
         //MODIFICAR
-        tfl1.setDocument(new MascaraTextField("", 0, 20, TipoMascaraTextField.SOLO_NUMEROS_ENTEROS));
-        tfl2.setDocument(new MascaraTextField("", 0, 255, TipoMascaraTextField.TODO));
-        tfl3.setDocument(new MascaraTextField("", 0, 255, TipoMascaraTextField.TODO));
+        tfl1.setDocument(new MascaraTextField("0", 1, 20, TipoMascaraTextField.SOLO_NUMEROS_ENTEROS));
+        tfl2.setEditable(false);
+        tfl3.setEditable(false);
+        tfl4.setDocument(new MascaraTextField("", 0, 11, TipoMascaraTextField.TODO));
+        tfl5.setDocument(new MascaraTextField("0.0", 1, 255, TipoMascaraTextField.SOLO_NUMEROS_DECIMALES));
+        tfl5.setEditable(false);
+        tfl6.setDocument(new MascaraTextField("0.0", 1, 255, TipoMascaraTextField.SOLO_NUMEROS_DECIMALES));
+
         dtp1.getSettings().setFormatForDatesCommonEra("dd/MM/yyyy");
-        if (modoEdicion == ModoEdicion.INSERT){
-            dtp1.setDate(LocalDate.now());
-        }else {
-            dtp1.setDate(null);
+        dtp1.setDate(LocalDate.now());
+        dtp2.getSettings().setFormatForDatesCommonEra("dd/MM/yyyy");
+        if (modoEdicion == ModoEdicion.INSERT) {
+            dtp2.setDate(LocalDate.now());
+        }else{
+            dtp2.setDate(null);
         }
-        dtp1.setEnabled(false);
-        tfl4.setDocument(new MascaraTextField("0", 1, 11, TipoMascaraTextField.TELEFONO));
-        tfl5.setDocument(new MascaraTextField("", 0, 255, TipoMascaraTextField.CORREO));
-        DefaultComboBoxModel comboBoxModel = new DefaultComboBoxModel(TipoCliente.values());
+        dtp2.setEnabled(false);
+        dtp3.getSettings().setFormatForDatesCommonEra("dd/MM/yyyy");
+        dtp3.setDate(null);
+        dtp3.setEnabled(false);
+        dtp4.getSettings().setFormatForDatesCommonEra("dd/MM/yyyy");
+        dtp4.setDate(null);
+        dtp4.setEnabled(false);
+        dtp5.getSettings().setFormatForDatesCommonEra("dd/MM/yyyy");
+        dtp5.setDate(null);
+        dtp5.setEnabled(false);
+
+        DefaultComboBoxModel comboBoxModel = new DefaultComboBoxModel(TipoPedido.values());
         cbo1.setModel(comboBoxModel);
+        DefaultComboBoxModel comboBoxModel2 = new DefaultComboBoxModel(EstadoPedido.values());
+        cbo2.setModel(comboBoxModel2);
+        cbo2.setEnabled(false);
+        DefaultComboBoxModel comboBoxModel3 = new DefaultComboBoxModel(TipoDocumento.values());
+        cbo3.setModel(comboBoxModel3);
     }
 
     @Override
@@ -178,27 +212,39 @@ public class ClienteEdita extends JDialog implements EditaJDialog {
     @Override
     public void accesoControlResto(boolean permite){
         //MODIFICAR
-        tfl2.setEditable(permite);
-        tfl3.setEditable(permite);
-        tfl4.setEditable(permite);
-        tfl5.setEditable(permite);
+        btntfl2.setEnabled(permite);
+        btntfl3.setEnabled(permite);
         cbo1.setEnabled(permite);
+        dtp1.setEnabled(permite);
+        tfl4.setEditable(permite);
+        cbo3.setEnabled(permite);
+        tfl6.setEditable(permite);
     }
 
     @Override
     public boolean cargaDatosEntidad(){
         //MODIFICAR
         EntidadRepository rep = new EntidadRepositoryRepositoryBaseDatos();
-        Cliente ent = rep.read( Cliente.class, pkEntidad);
-        //"DNI", "Nombre", "Direccion", "Fecha Creado", "Telefono", "Correo", "Tipo Cliente"
+        Pedido ent = rep.read( Pedido.class, pkEntidad);
+        //# codigo, observacion, fecCreado, fecProgramada, fecAtendido, fecPagado, fecAnulado, totalSoles, pagadoSoles, documento, estadoPedido, tipoPedido, codCliente, codMascota
+        //'100', 'mensaje', '2018-02-02', '2018-02-02', '2018-02-02', '2018-02-02', NULL, '100', '99', 'BOLETA', 'PAGADO', 'MEDICO', '1', '9'
         if (ent != null) {
-            tfl1.setText(ent.getDni());
-            tfl2.setText(ent.getNombre());
-            tfl3.setText(ent.getDireccion());
-            dtp1.setDate(ent.getFecCreado());
-            tfl4.setText(String.valueOf(ent.getTelefono()));
-            tfl5.setText(ent.getCorreo());
-            cbo1.setSelectedItem(ent.getTipoCliente());
+            tfl1.setText(String.valueOf(ent.getCodigo()));
+            tfl2.setText(ent.getMascota().getNombre());
+            entTfl2 = ent.getMascota();
+            tfl3.setText(ent.getCliente().getNombre());
+            entTfl3 = ent.getCliente();
+            cbo1.setSelectedItem(ent.getTipoPedido());
+            dtp1.setDate(ent.getFecProgramada());
+            tfl4.setText(ent.getObservacion());
+            cbo2.setSelectedItem(ent.getEstadoPedido());
+            tfl5.setText(String.valueOf(ent.getTotalSoles()));
+            cbo3.setSelectedItem(ent.getTipoDocumento());
+            tfl6.setText(String.valueOf(ent.getPagadoSoles()));
+            dtp2.setDate(ent.getFecCreado());
+            dtp3.setDate(ent.getFecAtendido());
+            dtp4.setDate(ent.getFecPagado());
+            dtp5.setDate(ent.getFecAnulado());
             return true;
         }
         return false;
@@ -207,32 +253,27 @@ public class ClienteEdita extends JDialog implements EditaJDialog {
     @Override
     public String errorAlValidarDatosEntidad(){
         //MODIFICAR
-        List<Cliente> listaValid;
+        List<Pedido> listaValid;
         EntidadRepository rep;
         String sqlWhere;
         Object[] param;
-        if (tfl1.getText().length() ==0){
-            return "Dni en blanco";
-        }
+        int maxCodigo = 0;
 
         switch(modoEdicion){
             case INSERT:
                 rep = new EntidadRepositoryRepositoryBaseDatos();
-                sqlWhere = "(dni = ? ) ";
-                param = new Object[]{tfl1.getText() };
-                listaValid = rep.read( Cliente.class, sqlWhere, param);
-                if (listaValid.size() > 0){
-                    return "Dni ya fue registrado antes";
+                sqlWhere = " ";
+                param = new Object[]{};
+                listaValid = rep.read( Pedido.class, sqlWhere, param);
+                for (Pedido ped : listaValid){
+                    if (maxCodigo < ped.getCodigo()){
+                        maxCodigo = ped.getCodigo();
+                    }
                 }
+                maxCodigo++;
+                tfl1.setText(String.valueOf(maxCodigo));
                 break;
             case UPDATE:
-                rep = new EntidadRepositoryRepositoryBaseDatos();
-                sqlWhere = "(dni = ? ) ";
-                param = new Object[]{tfl1.getText() };
-                listaValid = rep.read( Cliente.class, sqlWhere, param);
-                if (listaValid.size() == 0){
-                    return "Dni no existe";
-                }
                 break;
             case DELETE:
                 break;
@@ -242,13 +283,22 @@ public class ClienteEdita extends JDialog implements EditaJDialog {
         //para todos los casos
 
         if (tfl2.getText().length() ==0){
-            return "nombre esta en blanco";
+            return "Seleccione mascota";
         }
-        if (dtp1.getDate() == null){
-            return "fecha de creacion esta en blanco";
+        if (tfl3.getText().length() ==0){
+            return "Seleccione cliente";
         }
         if (cbo1.getSelectedItem()==null){
-            return "tipo de cliente esta en blanco";
+            return "Tipo de Pedido esta en blanco";
+        }
+        if (dtp1.getDate() == null){
+            return "Fecha de programacion esta en blanco";
+        }
+        if (cbo3.getSelectedItem()==null){
+            return "Tipo de Documento esta en blanco";
+        }
+        if (dtp5.getDate() != null){
+            return "Pedido Anulado no puede modificarse";
         }
         return null;
     }
@@ -257,12 +307,13 @@ public class ClienteEdita extends JDialog implements EditaJDialog {
     public boolean grabaDatosEntidad(){
         //MODIFICAR
         EntidadRepository rep;
-        Cliente ent;
+        Pedido ent;
         switch(modoEdicion){
             case INSERT:
                 rep = new EntidadRepositoryRepositoryBaseDatos();
-                ent = new Cliente(tfl1.getText(), tfl2.getText(), tfl3.getText(), dtp1.getDate(), Conversion.toint(tfl4.getText()),
-                        tfl5.getText(), (TipoCliente) cbo1.getSelectedItem(), null);
+                ent = new Pedido(Conversion.toint(tfl1.getText()), tfl4.getText(), dtp2.getDate(), dtp1.getDate(), dtp3.getDate(), dtp4.getDate(), dtp5.getDate(),
+                        Conversion.todouble(tfl5.getText()), Conversion.todouble(tfl6.getText()), (TipoDocumento) cbo3.getSelectedItem(),
+                        (EstadoPedido) cbo2.getSelectedItem(), (TipoPedido) cbo1.getSelectedItem(), (Cliente) entTfl3, (Mascota) entTfl2, null);
                 if (rep.create( ent) > 0) {
                     //JOptionPane.showMessageDialog(null, "Datos Grabados");
                     return true;
@@ -272,8 +323,9 @@ public class ClienteEdita extends JDialog implements EditaJDialog {
                 }
             case UPDATE:
                 rep = new EntidadRepositoryRepositoryBaseDatos();
-                ent = new Cliente(tfl1.getText(), tfl2.getText(), tfl3.getText(), dtp1.getDate(), Conversion.toint(tfl4.getText()),
-                        tfl5.getText(), (TipoCliente) cbo1.getSelectedItem(), null);
+                ent = new Pedido(Conversion.toint(tfl1.getText()), tfl4.getText(), dtp2.getDate(), dtp1.getDate(), dtp3.getDate(), dtp4.getDate(), dtp5.getDate(),
+                        Conversion.todouble(tfl5.getText()), Conversion.todouble(tfl6.getText()), (TipoDocumento) cbo3.getSelectedItem(),
+                        (EstadoPedido) cbo2.getSelectedItem(), (TipoPedido) cbo1.getSelectedItem(), (Cliente) entTfl3, (Mascota) entTfl2, null);
                 if (rep.update( ent) > 0) {
                     //JOptionPane.showMessageDialog(null, "Datos Grabados");
                     return true;
@@ -284,7 +336,7 @@ public class ClienteEdita extends JDialog implements EditaJDialog {
             case DELETE:
                 if (JOptionPane.showConfirmDialog(null, "Desea Eliminar estos datos?","Borrar datos",JOptionPane.YES_NO_OPTION) == 0){
                     rep = new EntidadRepositoryRepositoryBaseDatos();
-                    if (rep.delete(Cliente.class, tfl1.getText()) > 0) {
+                    if (rep.delete(Pedido.class, Conversion.toint(tfl1.getText())) > 0) {
                         //JOptionPane.showMessageDialog(null, "Datos Grabados");
                         return true;
                     }else {
@@ -301,8 +353,8 @@ public class ClienteEdita extends JDialog implements EditaJDialog {
     }
 
     public static void main(String[] args) {
-        ClienteEdita dialog = new ClienteEdita();
-        Object respuesta = dialog.showConfirmJDialog(ModoEdicion.UPDATE, "1", null);
+        PedidoEdita dialog = new PedidoEdita();
+        Object respuesta = dialog.showConfirmJDialog(ModoEdicion.UPDATE, 200, null);
         if (respuesta != null){
             System.out.println(respuesta);
             //refresca grid dialog origen

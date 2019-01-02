@@ -10,8 +10,16 @@ import java.util.*;
 public class Pedido {
 	@Campo(nombre = "codigo", esPK = true)
 	private int codigo;
+	@Campo(nombre = "codMascota")
+	private Mascota mascota;
+	@Campo(nombre = "codCliente")
+	private Cliente cliente;
+	@Campo(nombre = "tipopedido")
+	private TipoPedido tipoPedido;
 	@Campo(nombre = "observacion")
 	private String observacion;
+	@Campo(nombre = "estadoPedido")
+	private EstadoPedido estadoPedido;
 	@Campo(nombre = "fecCreado")
 	private LocalDate fecCreado;
 	@Campo(nombre = "fecProgramada")
@@ -26,22 +34,14 @@ public class Pedido {
 	private double totalSoles;
 	@Campo(nombre = "pagadoSoles")
 	private double pagadoSoles;
-	@Campo(nombre = "documento")
-	private Documento documento;
-	@Campo(nombre = "estadoPedido")
-	private EstadoPedido estadoPedido;
-	@Campo(nombre = "tipopedido")
-	private TipoPedido tipoPedido;
-	@Campo(nombre = "codCliente")
-	private Cliente cliente;
-	@Campo(nombre = "codMascota")
-	private Mascota mascota;
+	@Campo(nombre = "tipoDocumento")
+	private TipoDocumento tipoDocumento;
 	private List<DetallePedido> detallePedidos;
 
 	public Pedido() {
 	}
 
-	public Pedido(int codigo, String observacion, LocalDate fecCreado, LocalDate fecProgramada, LocalDate fecAtendido, LocalDate fecPagado, LocalDate fecAnulado, double totalSoles, double pagadoSoles, Documento documento, EstadoPedido estadoPedido, TipoPedido tipoPedido, Cliente cliente, Mascota mascota, List<DetallePedido> detallePedidos) {
+	public Pedido(int codigo, String observacion, LocalDate fecCreado, LocalDate fecProgramada, LocalDate fecAtendido, LocalDate fecPagado, LocalDate fecAnulado, double totalSoles, double pagadoSoles, TipoDocumento tipoDocumento, EstadoPedido estadoPedido, TipoPedido tipoPedido, Cliente cliente, Mascota mascota, List<DetallePedido> detallePedidos) {
 		this.codigo = codigo;
 		this.observacion = observacion;
 		this.fecCreado = fecCreado;
@@ -51,7 +51,7 @@ public class Pedido {
 		this.fecAnulado = fecAnulado;
 		this.totalSoles = totalSoles;
 		this.pagadoSoles = pagadoSoles;
-		this.documento = documento;
+		this.tipoDocumento = tipoDocumento;
 		this.estadoPedido = estadoPedido;
 		this.tipoPedido = tipoPedido;
 		this.cliente = cliente;
@@ -147,12 +147,12 @@ public class Pedido {
 		this.pagadoSoles = pagadoSoles;
 	}
 
-	public Documento getDocumento() {
-		return documento;
+	public TipoDocumento getTipoDocumento() {
+		return tipoDocumento;
 	}
 
-	public void setDocumento(Documento documento) {
-		this.documento = documento;
+	public void setTipoDocumento(TipoDocumento tipoDocumento) {
+		this.tipoDocumento = tipoDocumento;
 	}
 
 	public EstadoPedido getEstadoPedido() {
@@ -191,7 +191,7 @@ public class Pedido {
 				", fecAnulado=" + fecAnulado +
 				", totalSoles=" + totalSoles +
 				", pagadoSoles=" + pagadoSoles +
-				", documento=" + documento +
+				", tipoDocumento=" + tipoDocumento +
 				", estadoPedido=" + estadoPedido +
 				", tipoPedido=" + tipoPedido +
 				", cliente=" + cliente +
@@ -214,7 +214,7 @@ public class Pedido {
 				Objects.equals(fecAtendido, pedido.fecAtendido) &&
 				Objects.equals(fecPagado, pedido.fecPagado) &&
 				Objects.equals(fecAnulado, pedido.fecAnulado) &&
-				documento == pedido.documento &&
+				tipoDocumento == pedido.tipoDocumento &&
 				estadoPedido == pedido.estadoPedido &&
 				tipoPedido == pedido.tipoPedido &&
 				Objects.equals(cliente, pedido.cliente) &&

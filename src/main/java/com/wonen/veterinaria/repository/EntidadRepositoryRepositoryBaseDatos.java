@@ -42,11 +42,11 @@ public class EntidadRepositoryRepositoryBaseDatos implements EntidadRepository {
 
         try (Connection con = BaseDeDatos.getConnection();
              PreparedStatement stat = con.prepareStatement(sql);){
-            Map<String, Object> mapValObj = this.camposYValoresInsert(entidad);
+            Map<String, Map.Entry<String, Object>> mapValObj = this.camposYValoresInsert(entidad);
             int cont = 0;
-            for (Map.Entry<String, Object> elem : mapValObj.entrySet()){
+            for (Map.Entry<String, Map.Entry<String, Object>> elem : mapValObj.entrySet()){
                 cont++;
-                this.setParamQuery(stat, cont, elem.getValue());
+                this.setParamQuery(stat, cont, elem.getValue().getKey(), elem.getValue().getValue());
             }
             stat.execute();
             int contador = stat.getUpdateCount();
@@ -77,7 +77,7 @@ public class EntidadRepositoryRepositoryBaseDatos implements EntidadRepository {
 
         try (Connection con = BaseDeDatos.getConnection();
              PreparedStatement stat = con.prepareStatement(sql);){
-            this.setParamQuery(stat, 1, valPK);
+            this.setParamQuery(stat, 1, valPK.getClass().getSimpleName(), valPK);
 
             try (ResultSet rs = stat.executeQuery()) {
                 listaEnt = this.resultSetToClase(rs, claEnt);
@@ -117,7 +117,7 @@ public class EntidadRepositoryRepositoryBaseDatos implements EntidadRepository {
             int contPos = 0;
             for (Object elem : sqlParamStringValor) {
                 contPos++;
-                this.setParamQuery(stat, contPos, elem);
+                this.setParamQuery(stat, contPos, elem.getClass().getSimpleName(), elem);
             }
             stat.setFetchSize(100);
             try (ResultSet rs = stat.executeQuery()) {
@@ -138,14 +138,14 @@ public class EntidadRepositoryRepositoryBaseDatos implements EntidadRepository {
     public <E> long update(E entidad) {
         Class claEnt = entidad.getClass();
         String nomTabla = this.nombreTabla(claEnt);
-        Map<String, Object> mapPK = this.camposYValoresPK(entidad);
-        Map<String, Object> mapValObj = this.camposYValoresUpdate(entidad);
+        Map<String, Map.Entry<String, Object>> mapPK = this.camposYValoresPK(entidad);
+        Map<String, Map.Entry<String, Object>> mapValObj = this.camposYValoresUpdate(entidad);
         String camposUpdate = "", nombreCampoPK  = "";
-        for (Map.Entry<String, Object> elem : mapValObj.entrySet()){
+        for (Map.Entry<String, Map.Entry<String, Object>> elem : mapValObj.entrySet()){
             camposUpdate += elem.getKey() + " = ?, ";
         }
         camposUpdate = (camposUpdate.length() >=2 ? camposUpdate.substring(0, camposUpdate.length()-2):camposUpdate);
-        for (Map.Entry<String, Object> elem2 : mapPK.entrySet()){
+        for (Map.Entry<String, Map.Entry<String, Object>> elem2 : mapPK.entrySet()){
             nombreCampoPK += elem2.getKey() + " = ?";
         }
 
@@ -157,13 +157,13 @@ public class EntidadRepositoryRepositoryBaseDatos implements EntidadRepository {
              PreparedStatement stat = con.prepareStatement(sql);){
 
             int cont = 0;
-            for (Map.Entry<String, Object> elem3 : mapValObj.entrySet()){
+            for (Map.Entry<String, Map.Entry<String, Object>> elem3 : mapValObj.entrySet()){
                 cont++;
-                this.setParamQuery(stat, cont, elem3.getValue());
+                this.setParamQuery(stat, cont, elem3.getValue().getKey(), elem3.getValue().getValue());
             }
-            for (Map.Entry<String, Object> elem4 : mapPK.entrySet()){
+            for (Map.Entry<String, Map.Entry<String, Object>> elem4 : mapPK.entrySet()){
                 cont++;
-                this.setParamQuery(stat, cont, elem4.getValue());
+                this.setParamQuery(stat, cont, elem4.getValue().getKey(), elem4.getValue().getValue());
             }
             stat.execute();
             int contador = stat.getUpdateCount();
@@ -198,7 +198,7 @@ public class EntidadRepositoryRepositoryBaseDatos implements EntidadRepository {
 
         try (Connection con = BaseDeDatos.getConnection();
              PreparedStatement stat = con.prepareStatement(sql);){
-            this.setParamQuery(stat, 1, valPK);
+            this.setParamQuery(stat, 1, valPK.getClass().getSimpleName(), valPK);
 
             stat.execute();
             int cont = stat.getUpdateCount();
@@ -333,14 +333,16 @@ public class EntidadRepositoryRepositoryBaseDatos implements EntidadRepository {
     }
 
     //Todos los campos en el orden en que fueron registrados
-    private <E> Map<String, Object> camposYValoresInsert(E entidad){
-        Map<String, Object> camposValCla = new LinkedHashMap<>();
+    //usa entry para manejar nulos
+    private <E> Map<String, Map.Entry<String, Object>> camposYValoresInsert(E entidad){
+        Map<String, Map.Entry<String, Object>> camposValCla = new LinkedHashMap<>();
         Class claEnt = entidad.getClass();
         try {
             for (Field field: claEnt.getDeclaredFields()) {
                 field.setAccessible(true);
                 if (field.isAnnotationPresent(Campo.class)) {
-                    camposValCla.put(field.getAnnotation(Campo.class).nombre(), field.get(entidad) )  ;
+                    Map.Entry<String, Object> entry = new AbstractMap.SimpleEntry<>(field.getType().getSimpleName(), field.get(entidad));
+                    camposValCla.put(field.getAnnotation(Campo.class).nombre(), entry );
                 }
             }
             return camposValCla;
@@ -351,14 +353,17 @@ public class EntidadRepositoryRepositoryBaseDatos implements EntidadRepository {
     }
 
     //Todos los campos en el orden en que fueron registrados menos la PK
-    private <E> Map<String, Object> camposYValoresUpdate(E entidad){
-        Map<String, Object> camposValCla = new LinkedHashMap<>();
+    //usa entry para manejar nulos
+    private <E> Map<String, Map.Entry<String, Object>> camposYValoresUpdate(E entidad){
+        Map<String, Map.Entry<String, Object>> camposValCla = new LinkedHashMap<>();
         Class claEnt = entidad.getClass();
         try {
             for (Field field: claEnt.getDeclaredFields()) {
                 field.setAccessible(true);
                 if (field.isAnnotationPresent(Campo.class) && !field.getAnnotation(Campo.class).esPK()) {
-                    camposValCla.put(field.getAnnotation(Campo.class).nombre(), field.get(entidad) )  ;
+                    Class claFie = field.getClass();
+                    Map.Entry<String, Object> entry = new AbstractMap.SimpleEntry<>(field.getType().getSimpleName(), field.get(entidad));
+                    camposValCla.put(field.getAnnotation(Campo.class).nombre(), entry );
                 }
             }
             return camposValCla;
@@ -369,14 +374,16 @@ public class EntidadRepositoryRepositoryBaseDatos implements EntidadRepository {
     }
 
     //Todos los campos PK en el orden en que fueron registrados
-    private <E> Map<String, Object> camposYValoresPK(E entidad){
-        Map<String, Object> camposValCla = new LinkedHashMap<>();
+    //Usa entry para manejar nulos
+    private <E> Map<String, Map.Entry<String, Object>> camposYValoresPK(E entidad){
+        Map<String, Map.Entry<String, Object>> camposValCla = new LinkedHashMap<>();
         Class claEnt = entidad.getClass();
         try {
-            for (Field field2: claEnt.getDeclaredFields()) {
-                field2.setAccessible(true);
-                if (field2.isAnnotationPresent(Campo.class) && field2.getAnnotation(Campo.class).esPK()) {
-                    camposValCla.put(field2.getAnnotation(Campo.class).nombre(), field2.get(entidad) )  ;
+            for (Field field: claEnt.getDeclaredFields()) {
+                field.setAccessible(true);
+                if (field.isAnnotationPresent(Campo.class) && field.getAnnotation(Campo.class).esPK()) {
+                    Map.Entry<String, Object> entry = new AbstractMap.SimpleEntry<>(field.getType().getSimpleName(), field.get(entidad));
+                    camposValCla.put(field.getAnnotation(Campo.class).nombre(), entry );
                 }
             }
             return camposValCla;
@@ -386,8 +393,8 @@ public class EntidadRepositoryRepositoryBaseDatos implements EntidadRepository {
         return camposValCla;
     }
 
-    private <V> void setParamQuery(PreparedStatement stat, int posicion, V valor) throws SQLException{
-        switch (valor.getClass().getSimpleName()){
+    private <V> void setParamQuery(PreparedStatement stat, int posicion,String nombreSimpleTipo, V valor) throws SQLException{
+        switch (nombreSimpleTipo){
             case "long":
             case "Long":
                 stat.setLong(posicion, (Long) valor);
@@ -421,7 +428,7 @@ public class EntidadRepositoryRepositoryBaseDatos implements EntidadRepository {
                     stat.setString(posicion, valEnum );
                 }else {
                     //clases: busca el valor de su PK y eso es lo que graba
-                    this.setParamQuery(stat, posicion, valorPKClase(valor));
+                    this.setParamQuery(stat, posicion, valorPKClase(valor).getClass().getSimpleName(), valorPKClase(valor));
                 }
         }
     }

@@ -1,6 +1,6 @@
 package main.java.com.wonen.veterinaria.model;
 
-public enum Documento {
+public enum TipoDocumento {
 	FACTURA,
 	BOLETA,
 	NOTA_CREDITO,
