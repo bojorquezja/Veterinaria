@@ -4,6 +4,7 @@ import main.java.com.wonen.veterinaria.model.*;
 import main.java.com.wonen.veterinaria.repository.EntidadRepository;
 import main.java.com.wonen.veterinaria.repository.EntidadRepositoryRepositoryBaseDatos;
 import main.java.com.wonen.veterinaria.service.Conversion;
+import main.java.com.wonen.veterinaria.service.Info;
 import main.java.com.wonen.veterinaria.views.comun.*;
 
 import javax.swing.*;
@@ -181,24 +182,31 @@ public class MascotaLista extends JDialog implements ListaJDialog {
         tbl1.setModel(tableModel);
         tbl1.getColumnModel().getColumn(2).setCellRenderer(new EstiloCeldaJTable());
         UtilitariosSwing.escondeColumnaJTable(tbl1,7);  //esconde la columna con el objeto propietario
+        tbl1.setDefaultEditor(Object.class, null);
     }
 
     @Override
     public void alBuscar() {
         //MODIFICAR
         List<Mascota> listaBus;
+        Mascota entPla = new Mascota();
         EntidadRepository rep = new EntidadRepositoryRepositoryBaseDatos();
         String sqlWhere = "(codigo = ? or ? = 0) " +
                 "and (nombre like ? or ? = '%%') " +
                 "and (descripcion like ? or ? = '%%') " +
                 "and (tipomascota = ? or ? = '(Todos)') " +
                 "and (cuidado = ? or ? = '(Todos)')";
+        Class[] tipo = {Info.getClase(entPla.getCodigo()), Info.getClase(entPla.getCodigo()),
+                Info.getClase(entPla.getNombre()), Info.getClase(entPla.getNombre()),
+                Info.getClase(entPla.getDescripcion()), Info.getClase(entPla.getDescripcion()),
+                cbo1.getSelectedItem().getClass(), cbo1.getSelectedItem().getClass(),
+                cbo2.getSelectedItem().getClass(), cbo2.getSelectedItem().getClass()};
         Object[] param = {Conversion.toint(tfl1.getText()), Conversion.toint(tfl1.getText()),
                 "%" + tfl2.getText() + "%", "%" + tfl2.getText() + "%",
                 "%" + tfl4.getText() + "%", "%" + tfl4.getText() + "%",
                 cbo1.getSelectedItem() , cbo1.getSelectedItem(),
                 cbo2.getSelectedItem() , cbo2.getSelectedItem()};
-        listaBus = rep.read( Mascota.class, sqlWhere, param);
+        listaBus = rep.read( entPla.getClass(), sqlWhere, tipo, param);
 
         DefaultTableModel tableModel = (DefaultTableModel) tbl1.getModel();
         tableModel.setRowCount(0);

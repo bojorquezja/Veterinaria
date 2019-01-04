@@ -1,32 +1,48 @@
 package main.java.com.wonen.veterinaria.views;
 
-import main.java.com.wonen.veterinaria.model.Cliente;
-import main.java.com.wonen.veterinaria.model.Mascota;
-import main.java.com.wonen.veterinaria.model.TipoCliente;
+import com.github.lgooddatepicker.components.DatePicker;
+import main.java.com.wonen.veterinaria.model.*;
 import main.java.com.wonen.veterinaria.repository.EntidadRepository;
 import main.java.com.wonen.veterinaria.repository.EntidadRepositoryRepositoryBaseDatos;
+import main.java.com.wonen.veterinaria.service.Conversion;
+import main.java.com.wonen.veterinaria.service.Info;
 import main.java.com.wonen.veterinaria.views.comun.*;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class PedidoLista extends JDialog implements ListaJDialog {
+    private JPanel contentPane;
     private JTextField tfl1;
     private JTextField tfl2;
+    private JTextField tfl3;
+    private JTextField tfl4;
     private JTable tbl1;
     private JButton btn0;
-    private JPanel contentPane;
     private JButton btn1;
     private JButton btn2;
     private JButton btn3;
-    private JButton btn9;
-    private JComboBox cbo1;
     private JButton btn8;
+    private JButton btn9;
+    private JButton btnD;
+    private JButton btnA;
+    private JButton btnP;
+    private JComboBox cbo1;
+    private JComboBox cbo2;
+    private JCheckBox chk1;
+    private JCheckBox chk2;
+    private DatePicker dtp1;
+    private DatePicker dtp2;
+    private DatePicker dtp3;
+    private DatePicker dtp4;
 
     private ModoLista modoLista;    //LIST, SELECT
     private Object valEntidad;     //entidad para modoEdicion
@@ -115,17 +131,74 @@ public class PedidoLista extends JDialog implements ListaJDialog {
                 }
             }
         });
+        btnD.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                alDetalle();
+            }
+        });
+        btnA.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                alAtender();
+            }
+        });
+        btnP.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                alPagar();
+            }
+        });
+
+        chk1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                alChkFecProgramada();
+            }
+        });
+        chk2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                alChkFecPagado();
+            }
+        });
+    }
+
+    private void alChkFecProgramada(){
+        if (chk1.isSelected()){
+            dtp1.setEnabled(true);
+            dtp2.setEnabled(true);
+        }
+        if (!chk1.isSelected()){
+            dtp1.setEnabled(false);
+            dtp2.setEnabled(false);
+        }
+    }
+
+    private void alChkFecPagado(){
+        if (chk2.isSelected()){
+            dtp3.setEnabled(true);
+            dtp4.setEnabled(true);
+        }
+        if (!chk2.isSelected()){
+            dtp3.setEnabled(false);
+            dtp4.setEnabled(false);
+        }
     }
 
     @Override
     public String valoresIniciales() {
+        //MODIFICAR
         this.cargaLimpiaControles();
         alBuscar();
         btn0.setText("Buscar");
         btn1.setText("Crear");
         btn2.setText("Editar");
-        btn3.setText("Borrar");
+        btn3.setText("Anular / Activar");
         btn8.setText("Seleccionar");
+        btnD.setText("Items del Pedido");
+        btnA.setText("Atender / Desatender");
+        btnP.setText("Pagar");
         switch(modoLista){
             case LIST_CRUD:
                 this.setTitle("Lista de datos");
@@ -164,69 +237,143 @@ public class PedidoLista extends JDialog implements ListaJDialog {
         //MODIFICAR
         tfl1.setDocument(new MascaraTextField("", 0, 20, TipoMascaraTextField.SOLO_NUMEROS_ENTEROS));
         tfl2.setDocument(new MascaraTextField("", 0, 255, TipoMascaraTextField.TODO));
-        //cbo1
-        Object[] cbotext = UtilitariosSwing.arrEnumConTodos(TipoCliente.class);
+        tfl3.setDocument(new MascaraTextField("", 0, 255, TipoMascaraTextField.TODO));
+        tfl4.setDocument(new MascaraTextField("", 0, 255, TipoMascaraTextField.TODO));
+        //cbos
+        Object[] cbotext = UtilitariosSwing.arrEnumConTodos(TipoPedido.class);
         DefaultComboBoxModel comboBoxModel = new DefaultComboBoxModel(cbotext);
         cbo1.setModel(comboBoxModel);
+        Object[] cbotext2 = UtilitariosSwing.arrEnumConTodos(EstadoPedido.class);
+        DefaultComboBoxModel comboBoxModel2 = new DefaultComboBoxModel(cbotext2);
+        cbo2.setModel(comboBoxModel2);
+        //Check y DatePickers
+        chk1.setSelected(true);
+        dtp1.getSettings().setFormatForDatesCommonEra("dd/MM/yyyy");
+        dtp1.setDate(LocalDate.now().minusDays(7));
+        dtp1.setEnabled(true);
+        dtp2.getSettings().setFormatForDatesCommonEra("dd/MM/yyyy");
+        dtp2.setDate(LocalDate.now().plusDays(7));
+        dtp2.setEnabled(true);
+
+        chk2.setSelected(false);
+        dtp3.getSettings().setFormatForDatesCommonEra("dd/MM/yyyy");
+        dtp3.setDate(null);
+        dtp3.setEnabled(false);
+        dtp4.getSettings().setFormatForDatesCommonEra("dd/MM/yyyy");
+        dtp4.setDate(null);
+        dtp4.setEnabled(false);
+
         //tbl1
         DefaultTableModel tableModel = new DefaultTableModel(0,8);
-        Object[] cabecera = new Object[]{"DNI", "Nombre", "Direccion", "Fecha Creado", "Telefono", "Correo", "Tipo Cliente", "Mascotas"};
+        Object[] cabecera = new Object[]{"Codigo", "Mascota", "Cliente", "Tipo", "Fec. Program.", "Total Soles",
+                                        "Pagado", "Fec. Pagado", "Fec. Atendido", "Fec. Creado", "Fec. Anulado",
+                                        "Doc. Pago", "Estado", "Observacion"};
         tableModel.setColumnIdentifiers(cabecera );
         tbl1.setModel(tableModel);
         Map<Object, Color> relColor = new HashMap<>();
-        relColor.put(TipoCliente.MAYORISTA, Color.ORANGE);
-        relColor.put(TipoCliente.FRECUENTE, Color.CYAN);
-        relColor.put(TipoCliente.NORMAL, Color.WHITE);
-        relColor.put(TipoCliente.VIP, Color.GREEN);
-        tbl1.getColumnModel().getColumn(0).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 6, relColor ));
-        tbl1.getColumnModel().getColumn(1).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 6, relColor ));
-        tbl1.getColumnModel().getColumn(2).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 6, relColor ));
-        tbl1.getColumnModel().getColumn(3).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 6, relColor ));
-        tbl1.getColumnModel().getColumn(4).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 6, relColor ));
-        tbl1.getColumnModel().getColumn(5).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 6, relColor ));
-        tbl1.getColumnModel().getColumn(6).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 6, relColor ));
-        tbl1.getColumnModel().getColumn(7).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 6, relColor ));
+        relColor.put(EstadoPedido.CREADO, Color.WHITE);
+        relColor.put(EstadoPedido.PROGRAMADO, Color.CYAN);
+        relColor.put(EstadoPedido.ATENDIDO, Color.YELLOW);
+        relColor.put(EstadoPedido.PAGADO, Color.GREEN);
+        relColor.put(EstadoPedido.ANULADO, Color.RED);
+        Map<Object, Color> relColor2 = new HashMap<>();
+        relColor2.put(EstadoPedido.CREADO, Color.BLACK);
+        relColor2.put(EstadoPedido.PROGRAMADO, Color.BLACK);
+        relColor2.put(EstadoPedido.ATENDIDO, Color.BLACK);
+        relColor2.put(EstadoPedido.PAGADO, Color.BLACK);
+        relColor2.put(EstadoPedido.ANULADO, Color.WHITE);
+        tbl1.getColumnModel().getColumn(0).setCellRenderer(new EstiloCeldaJTable(null, null, 12, relColor2, 12, relColor ));
+        tbl1.getColumnModel().getColumn(1).setCellRenderer(new EstiloCeldaJTable(null, null, 12, relColor2, 12, relColor ));
+        tbl1.getColumnModel().getColumn(2).setCellRenderer(new EstiloCeldaJTable(null, null, 12, relColor2, 12, relColor ));
+        tbl1.getColumnModel().getColumn(3).setCellRenderer(new EstiloCeldaJTable(null, null, 12, relColor2, 12, relColor ));
+        tbl1.getColumnModel().getColumn(4).setCellRenderer(new EstiloCeldaJTable(null, null, 12, relColor2, 12, relColor ));
+        tbl1.getColumnModel().getColumn(5).setCellRenderer(new EstiloCeldaJTable(null, null, 12, relColor2, 12, relColor ));
+        tbl1.getColumnModel().getColumn(6).setCellRenderer(new EstiloCeldaJTable(null, null, 12, relColor2, 12, relColor ));
+        tbl1.getColumnModel().getColumn(7).setCellRenderer(new EstiloCeldaJTable(null, null, 12, relColor2, 12, relColor ));
+        tbl1.getColumnModel().getColumn(8).setCellRenderer(new EstiloCeldaJTable(null, null, 12, relColor2, 12, relColor ));
+        tbl1.getColumnModel().getColumn(9).setCellRenderer(new EstiloCeldaJTable(null, null, 12, relColor2, 12, relColor ));
+        tbl1.getColumnModel().getColumn(10).setCellRenderer(new EstiloCeldaJTable(null, null, 12, relColor2, 12, relColor ));
+        tbl1.getColumnModel().getColumn(11).setCellRenderer(new EstiloCeldaJTable(null, null, 12, relColor2, 12, relColor ));
+        tbl1.getColumnModel().getColumn(12).setCellRenderer(new EstiloCeldaJTable(null, null, 12, relColor2, 12, relColor ));
+        tbl1.getColumnModel().getColumn(13).setCellRenderer(new EstiloCeldaJTable(null, null, 12, relColor2, 12, relColor ));
         //tbl1.getColumnModel().getColumn(3).setCellRenderer(new EstiloCeldaJTable());
+        //tbl1.setDefaultRenderer(Object.class, new EstiloCeldaJTable());
+        tbl1.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        //tbl1.scrollRectToVisible(tbl1.getCellRect(0, 8, true));
+        tbl1.setDefaultEditor(Object.class, null);
     }
 
     @Override
     public void alBuscar() {
         //MODIFICAR
-        List<Cliente> listaBus;
+        List<Pedido> listaBus;  //busqueda
+        Pedido entPla = new Pedido();  //plantilla
         EntidadRepository rep = new EntidadRepositoryRepositoryBaseDatos();
-        String sqlWhere = "(dni like ? or ? = '%%') " +
-                "and (nombre like ? or ? = '%%') " +
-                "and (tipoCliente = ? or ? = '(Todos)')";
-        Object[] param = {"%" + tfl1.getText() + "%", "%" + tfl1.getText() + "%",
-                "%" + tfl2.getText() + "%", "%" + tfl2.getText() + "%",
-                cbo1.getSelectedItem() , cbo1.getSelectedItem()};
-        listaBus = rep.read( Cliente.class, sqlWhere, param);
+        String sqlWhere = "(codigo >= ? or ? = 0) " +
+                "and (observacion like ? or ? = '%%') " +
+                "and (fecProgramada >= ? or isnull( ? )) " +
+                "and (fecProgramada <= ? or isnull( ? )) " +
+                "and (fecPagado >= ? or isnull( ? )) " +
+                "and (fecPagado <= ? or isnull( ? )) " +
+                "and (tipopedido = ? or ? = '(Todos)') " +
+                "and (estadoPedido = ? or ? = '(Todos)') ";
+
+        Class[] tipo = {Info.getClase(entPla.getCodigo()), Info.getClase(entPla.getCodigo()),
+                Info.getClase(entPla.getObservacion()), Info.getClase(entPla.getObservacion()),
+                Info.getClase(entPla.getFecProgramada()), Info.getClase(entPla.getFecProgramada()),
+                Info.getClase(entPla.getFecProgramada()), Info.getClase(entPla.getFecProgramada()),
+                Info.getClase(entPla.getFecPagado()), Info.getClase(entPla.getFecPagado()),
+                Info.getClase(entPla.getFecPagado()), Info.getClase(entPla.getFecPagado()),
+                cbo1.getSelectedItem().getClass(), cbo1.getSelectedItem().getClass(),
+                cbo2.getSelectedItem().getClass(), cbo2.getSelectedItem().getClass()};
+
+        Object[] param = {Conversion.toint(tfl1.getText()), Conversion.toint(tfl1.getText()),
+                "%" + tfl3.getText() + "%", "%" + tfl3.getText() + "%",
+                (chk1.isSelected() ? dtp1.getDate() : null ), (chk1.isSelected() ? dtp1.getDate() : null ),
+                (chk1.isSelected() ? dtp2.getDate() : null ), (chk1.isSelected() ? dtp2.getDate() : null ),
+                (chk2.isSelected() ? dtp3.getDate() : null ), (chk2.isSelected() ? dtp3.getDate() : null ),
+                (chk2.isSelected() ? dtp4.getDate() : null ), (chk2.isSelected() ? dtp4.getDate() : null ),
+                cbo1.getSelectedItem() , cbo1.getSelectedItem(),
+                cbo2.getSelectedItem() , cbo2.getSelectedItem()};
+        listaBus = rep.read( entPla.getClass(), sqlWhere, tipo, param);
 
         DefaultTableModel tableModel = (DefaultTableModel) tbl1.getModel();
         tableModel.setRowCount(0);
-        for (Cliente ent : listaBus){
-            String sqlWhere2 = "propietario = ?";
-            Object[] param2 = {ent.getDni()};
-            List<Mascota> mascotasLista = rep.read( Mascota.class, sqlWhere2, param2);
-            String strMascotas = "";
-            for (Mascota masc : mascotasLista){
-                strMascotas += masc.getNombre() + ", ";
+        for (Pedido ent : listaBus){
+            boolean correcto = true;
+            if (tfl2.getText().length() > 0){
+                Cliente entPla2 = new Cliente();  //plantilla
+                String sqlWhere2 = "nombre like ?";
+                Class[] tipo2 = {Info.getClase(entPla2.getNombre())};
+                Object[] param2 = {"%" + tfl2.getText() + "%"};
+                List<Cliente> cliLista = rep.read( entPla2.getClass(), sqlWhere2, tipo2, param2);
+                correcto = (cliLista.size()>0 ? true : false);
             }
-            strMascotas = (strMascotas.length() >= 2 ? strMascotas.substring(0, strMascotas.length()-2) : strMascotas);
-            //"DNI", "Nombre", "Direccion", "Fecha Creado", "Telefono", "Correo", "Tipo Cliente", "Mascotas"
-            Object[] fila = new Object[]{ent.getDni(), ent.getNombre(), ent.getDireccion(), ent.getFecCreado(),
-                    ent.getTelefono(), ent.getCorreo(), ent.getTipoCliente(), strMascotas};
-            tableModel.addRow(fila);
+            if (tfl4.getText().length() > 0){
+                Mascota entPla3 = new Mascota();  //plantilla
+                String sqlWhere3 = "nombre like ?";
+                Class[] tipo3 = {Info.getClase(entPla3.getNombre())};
+                Object[] param3 = {"%" + tfl4.getText() + "%"};
+                List<Mascota> masLista = rep.read( entPla3.getClass(), sqlWhere3, tipo3, param3);
+                correcto = (masLista.size()>0 ? true : false);
+            }
+            if (correcto) {
+                //"Codigo", "Mascota", "Cliente", "Tipo", "Fec. Program.", "Total Soles",
+                //"Pagado", "Fec. Pagado", "Fec. Atendido", "Fec. Creado", "Fec. Anulado",
+                //"Doc. Pago", "Estado", "Observacion"
+                Object[] fila = new Object[]{ent.getCodigo(), ent.getMascota().getNombre(), ent.getCliente().getNombre(), ent.getTipoPedido(), ent.getFecProgramada(), ent.getTotalSoles(),
+                        ent.getPagadoSoles(), ent.getFecPagado(), ent.getFecAtendido(), ent.getFecCreado(), ent.getFecAnulado(),
+                        ent.getTipoDocumento(), ent.getEstadoPedido(), ent.getObservacion()};
+                tableModel.addRow(fila);
+            }
         }
-
-        //tbl1.setDefaultRenderer(Object.class, new EstiloCeldaJTable());
 
     }
 
     @Override
     public void alCrear() {
         //MODIFICAR
-        ClienteEdita dialog = new ClienteEdita();
+        PedidoEdita dialog = new PedidoEdita();
         Object respuesta = dialog.showConfirmJDialog(ModoEdicion.INSERT, null, null);
         if (respuesta != null){
             this.alBuscar(); //refresca
@@ -237,8 +384,17 @@ public class PedidoLista extends JDialog implements ListaJDialog {
     public void alEditar() {
         //MODIFICAR
         if (tbl1.getSelectedRow() >= 0) {
-            ClienteEdita dialog = new ClienteEdita();
-            Object respuesta = dialog.showConfirmJDialog(ModoEdicion.UPDATE, tbl1.getValueAt(tbl1.getSelectedRow(),0), null);
+            ModoEdicion modoEdicion;
+            EntidadRepository rep = new EntidadRepositoryRepositoryBaseDatos();
+            Pedido ped = rep.read(Pedido.class, tbl1.getValueAt(tbl1.getSelectedRow(),0));
+            if (ped.getEstadoPedido() == EstadoPedido.ATENDIDO || ped.getEstadoPedido() == EstadoPedido.PAGADO || ped.getEstadoPedido() == EstadoPedido.ANULADO){
+                JOptionPane.showMessageDialog(null, "No se puede Editar si esta ATENDIDO, PAGADO O ANULADO");
+                modoEdicion = ModoEdicion.READ_ONLY;
+            }else{
+                modoEdicion = ModoEdicion.UPDATE;
+            }
+            PedidoEdita dialog = new PedidoEdita();
+            Object respuesta = dialog.showConfirmJDialog(modoEdicion , tbl1.getValueAt(tbl1.getSelectedRow(),0), null);
             if (respuesta != null){
                 this.alBuscar(); //refresca
             }
@@ -251,10 +407,38 @@ public class PedidoLista extends JDialog implements ListaJDialog {
     public void alBorrar() {
         //MODIFICAR
         if (tbl1.getSelectedRow() >= 0) {
-            ClienteEdita dialog = new ClienteEdita();
-            Object respuesta = dialog.showConfirmJDialog(ModoEdicion.DELETE, tbl1.getValueAt(tbl1.getSelectedRow(),0), null);
-            if (respuesta != null){
-                this.alBuscar(); //refresca
+            EntidadRepository rep = new EntidadRepositoryRepositoryBaseDatos();
+            Pedido ped = rep.read(Pedido.class, tbl1.getValueAt(tbl1.getSelectedRow(),0));
+            if (ped.getEstadoPedido() != EstadoPedido.ANULADO){
+                if (JOptionPane.showConfirmDialog(null, "Desea Anular Pedido?","Anular Pedido", JOptionPane.YES_NO_OPTION) == 0) {
+                    ped.setEstadoPedido(EstadoPedido.ANULADO);
+                    ped.setFecAnulado(LocalDate.now());
+                    if ( rep.update(ped) == 0 ){
+                        JOptionPane.showMessageDialog(null, "No se pudo ANULAR Pedido");
+                    }else{
+                        this.alBuscar(); //refresca
+                    }
+                }
+            }else{
+                if (JOptionPane.showConfirmDialog(null, "Desea Activar Pedido?","Activar Pedido", JOptionPane.YES_NO_OPTION) == 0) {
+                    EstadoPedido estPed;
+                    if (ped.getFecPagado() != null){
+                        estPed = EstadoPedido.PAGADO;
+                    }else if (ped.getFecAtendido() != null){
+                        estPed = EstadoPedido.ATENDIDO;
+                    }else if (ped.getFecProgramada() != null){
+                        estPed = EstadoPedido.PROGRAMADO;
+                    }else {
+                        estPed = EstadoPedido.CREADO;
+                    }
+                    ped.setEstadoPedido(estPed);
+                    ped.setFecAnulado(null);
+                    if ( rep.update(ped) == 0 ){
+                        JOptionPane.showMessageDialog(null, "No se pudo Activar Pedido");
+                    }else{
+                        this.alBuscar(); //refresca
+                    }
+                }
             }
         }else{
             JOptionPane.showMessageDialog(null, "Seleccione dato valido");
@@ -266,7 +450,7 @@ public class PedidoLista extends JDialog implements ListaJDialog {
         //MODIFICAR
         if (tbl1.getSelectedRow() >= 0) {
             EntidadRepository rep = new EntidadRepositoryRepositoryBaseDatos();
-            Cliente ent = rep.read( Cliente.class, tbl1.getValueAt(tbl1.getSelectedRow(),0)); //PK
+            Pedido ent = rep.read( Pedido.class, tbl1.getValueAt(tbl1.getSelectedRow(),0)); //PK
             this.retorno = ent;
             dispose();
         }else{
@@ -278,6 +462,101 @@ public class PedidoLista extends JDialog implements ListaJDialog {
     public void alCancelar() {
         this.retorno = null;
         dispose();
+    }
+
+    private void alDetalle() {
+        //MODIFICAR
+        if (tbl1.getSelectedRow() >= 0) {
+            ModoLista modoLis;
+            EntidadRepository rep = new EntidadRepositoryRepositoryBaseDatos();
+            Pedido ped = rep.read(Pedido.class, tbl1.getValueAt(tbl1.getSelectedRow(),0));
+            if (ped.getEstadoPedido() == EstadoPedido.ATENDIDO || ped.getEstadoPedido() == EstadoPedido.PAGADO || ped.getEstadoPedido() == EstadoPedido.ANULADO){
+                JOptionPane.showMessageDialog(null, "No se puede Editar el Detalle del Pedido si esta ATENDIDO, PAGADO o ANULADO");
+                modoLis = ModoLista.LIST_ONLY;
+            }else{
+                modoLis = ModoLista.LIST_CRUD;
+            }
+            DetallePedidoLista dialog = new DetallePedidoLista();
+            Object respuesta = dialog.showConfirmJDialog(modoLis , ped.getCodigo(), null);
+            if (respuesta != null){
+                Pedido ped2 = rep.read(Pedido.class, ped.getCodigo());
+                String sqlWhere2 = "(codpedido = ?) ";
+                Class[] tipo2 = {Info.getClase(ped.getCodigo())};
+                Object[] param2 = {ped.getCodigo()};
+                List<DetallePedido> detPed2 = rep.read( DetallePedido.class, sqlWhere2, tipo2, param2);
+                double totSoles = 0;
+                for (DetallePedido ent : detPed2){
+                    totSoles += ent.getTotalSoles();
+                }
+                ped2.setTotalSoles(totSoles);
+                rep.update(ped2);
+                this.alBuscar(); //refresca
+            }
+        }else{
+            JOptionPane.showMessageDialog(null, "Seleccione dato valido");
+        }
+    }
+
+    private void alAtender() {
+        //MODIFICAR
+        if (tbl1.getSelectedRow() >= 0) {
+            EntidadRepository rep = new EntidadRepositoryRepositoryBaseDatos();
+            Pedido ped = rep.read(Pedido.class, tbl1.getValueAt(tbl1.getSelectedRow(),0));
+            if (ped.getEstadoPedido() == EstadoPedido.PROGRAMADO ){
+                if (JOptionPane.showConfirmDialog(null, "Desea Atender Pedido?","Atender Pedido", JOptionPane.YES_NO_OPTION) == 0) {
+                    ped.setEstadoPedido(EstadoPedido.ATENDIDO);
+                    ped.setFecAtendido(LocalDate.now());
+                    if ( rep.update(ped) == 0 ){
+                        JOptionPane.showMessageDialog(null, "No se pudo ATENDER Pedido");
+                    }else{
+                        this.alBuscar(); //refresca
+                    }
+                }
+            }else if (ped.getEstadoPedido() == EstadoPedido.ATENDIDO ){
+                if (JOptionPane.showConfirmDialog(null, "Desea Desatender Pedido?","Desatender Pedido", JOptionPane.YES_NO_OPTION) == 0) {
+                    ped.setEstadoPedido(EstadoPedido.PROGRAMADO);
+                    ped.setFecAtendido(null);
+                    if ( rep.update(ped) == 0 ){
+                        JOptionPane.showMessageDialog(null, "No se pudo Desatender Pedido");
+                    }else{
+                        this.alBuscar(); //refresca
+                    }
+                }
+            }else{
+                JOptionPane.showMessageDialog(null, "Solo se puede ATENDER los PROGRAMADOS. Solo de puede Desatender los ATENDIDOS");
+            }
+        }else{
+            JOptionPane.showMessageDialog(null, "Seleccione dato valido");
+        }
+    }
+
+    private void alPagar() {
+        //MODIFICAR
+        if (tbl1.getSelectedRow() >= 0) {
+            EntidadRepository rep = new EntidadRepositoryRepositoryBaseDatos();
+            Pedido ped = rep.read(Pedido.class, tbl1.getValueAt(tbl1.getSelectedRow(),0));
+            if (ped.getEstadoPedido() == EstadoPedido.ATENDIDO || ped.getEstadoPedido() == EstadoPedido.PAGADO ){
+                PedidoEdita dialog = new PedidoEdita();
+                Object respuesta = dialog.showConfirmJDialog(ModoEdicion.CUSTOM_1 , ped.getCodigo(), null);
+                if (respuesta != null){
+                    Pedido ped2 = rep.read(Pedido.class, ped.getCodigo());
+                    if (ped2.getPagadoSoles() > 0.0){
+                        ped2.setEstadoPedido(EstadoPedido.PAGADO);
+                        ped2.setFecPagado(LocalDate.now());
+                    }else{
+                        ped2.setEstadoPedido(EstadoPedido.ATENDIDO);
+                        ped2.setFecPagado(null);
+                    }
+                    rep.update(ped2);
+                    this.alBuscar(); //refresca
+                }
+            }else{
+                JOptionPane.showMessageDialog(null, "No se puede Pagar a menos que este ATENDIDO O PAGADO");
+            }
+
+        }else{
+            JOptionPane.showMessageDialog(null, "Seleccione dato valido");
+        }
     }
 
     public static void main(String[] args) {

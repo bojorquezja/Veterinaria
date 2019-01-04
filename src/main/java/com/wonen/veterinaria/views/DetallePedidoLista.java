@@ -7,6 +7,7 @@ import main.java.com.wonen.veterinaria.model.TipoProducto;
 import main.java.com.wonen.veterinaria.repository.EntidadRepository;
 import main.java.com.wonen.veterinaria.repository.EntidadRepositoryRepositoryBaseDatos;
 import main.java.com.wonen.veterinaria.service.Conversion;
+import main.java.com.wonen.veterinaria.service.Info;
 import main.java.com.wonen.veterinaria.views.comun.*;
 
 import javax.swing.*;
@@ -195,25 +196,33 @@ public class DetallePedidoLista extends JDialog implements ListaJDialog {
         relColor.put(TipoProducto.ARTICULO, Color.WHITE);
         relColor.put(TipoProducto.SERVICIO, Color.CYAN);
         relColor.put(TipoProducto.ACTIVO, Color.YELLOW);
-        tbl1.getColumnModel().getColumn(0).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 7, relColor ));
-        tbl1.getColumnModel().getColumn(1).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 7, relColor ));
-        tbl1.getColumnModel().getColumn(2).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 7, relColor ));
-        tbl1.getColumnModel().getColumn(3).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 7, relColor ));
-        tbl1.getColumnModel().getColumn(4).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 7, relColor ));
-        tbl1.getColumnModel().getColumn(5).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 7, relColor ));
-        tbl1.getColumnModel().getColumn(6).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 7, relColor ));
-        tbl1.getColumnModel().getColumn(7).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 7, relColor ));
+        Map<Object, Color> relColor2 = new HashMap<>();
+        relColor2.put(TipoProducto.ARTICULO, Color.BLACK);
+        relColor2.put(TipoProducto.SERVICIO, Color.BLACK);
+        relColor2.put(TipoProducto.ACTIVO, Color.BLACK);
+        tbl1.getColumnModel().getColumn(0).setCellRenderer(new EstiloCeldaJTable(null, null, 7, relColor2, 7, relColor ));
+        tbl1.getColumnModel().getColumn(1).setCellRenderer(new EstiloCeldaJTable(null, null, 7, relColor2, 7, relColor ));
+        tbl1.getColumnModel().getColumn(2).setCellRenderer(new EstiloCeldaJTable(null, null, 7, relColor2, 7, relColor ));
+        tbl1.getColumnModel().getColumn(3).setCellRenderer(new EstiloCeldaJTable(null, null, 7, relColor2, 7, relColor ));
+        tbl1.getColumnModel().getColumn(4).setCellRenderer(new EstiloCeldaJTable(null, null, 7, relColor2, 7, relColor ));
+        tbl1.getColumnModel().getColumn(5).setCellRenderer(new EstiloCeldaJTable(null, null, 7, relColor2, 7, relColor ));
+        tbl1.getColumnModel().getColumn(6).setCellRenderer(new EstiloCeldaJTable(null, null, 7, relColor2, 7, relColor ));
+        tbl1.getColumnModel().getColumn(7).setCellRenderer(new EstiloCeldaJTable(null, null, 7, relColor2, 7, relColor ));
         UtilitariosSwing.escondeColumnaJTable(tbl1,1);
+        tbl1.setDefaultEditor(Object.class, null);
     }
 
     @Override
     public void alBuscar() {
         //MODIFICAR
         List<DetallePedido> listaBus;
+        DetallePedido entPla = new DetallePedido();
+        Pedido entPla2 = new Pedido();
         EntidadRepository rep = new EntidadRepositoryRepositoryBaseDatos();
         String sqlWhere = "(codpedido = ?) ";
+        Class[] tipo = {Info.getClase(entPla2.getCodigo())};
         Object[] param = {Conversion.toint(tfl1.getText())};
-        listaBus = rep.read( DetallePedido.class, sqlWhere, param);
+        listaBus = rep.read( entPla.getClass(), sqlWhere, tipo, param);
 
         DefaultTableModel tableModel = (DefaultTableModel) tbl1.getModel();
         tableModel.setRowCount(0);

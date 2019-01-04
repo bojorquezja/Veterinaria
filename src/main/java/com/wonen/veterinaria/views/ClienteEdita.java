@@ -6,6 +6,7 @@ import main.java.com.wonen.veterinaria.model.TipoCliente;
 import main.java.com.wonen.veterinaria.repository.EntidadRepository;
 import main.java.com.wonen.veterinaria.repository.EntidadRepositoryRepositoryBaseDatos;
 import main.java.com.wonen.veterinaria.service.Conversion;
+import main.java.com.wonen.veterinaria.service.Info;
 import main.java.com.wonen.veterinaria.views.comun.EditaJDialog;
 import main.java.com.wonen.veterinaria.views.comun.MascaraTextField;
 import main.java.com.wonen.veterinaria.views.comun.ModoEdicion;
@@ -122,6 +123,7 @@ public class ClienteEdita extends JDialog implements EditaJDialog {
                     this.accesoControlResto(false);
                     this.setTitle("Ver registro");
                     btn8.setText("Aceptar");
+                    btn8.setVisible(false);
                     btn9.setText("Cancelar");
                     return null;
                 }else{
@@ -208,8 +210,10 @@ public class ClienteEdita extends JDialog implements EditaJDialog {
     public String errorAlValidarDatosEntidad(){
         //MODIFICAR
         List<Cliente> listaValid;
+        Cliente entPla = new Cliente();
         EntidadRepository rep;
         String sqlWhere;
+        Class[] tipo;
         Object[] param;
         if (tfl1.getText().length() ==0){
             return "Dni en blanco";
@@ -219,8 +223,9 @@ public class ClienteEdita extends JDialog implements EditaJDialog {
             case INSERT:
                 rep = new EntidadRepositoryRepositoryBaseDatos();
                 sqlWhere = "(dni = ? ) ";
+                tipo = new Class[]{Info.getClase(entPla.getDni())};
                 param = new Object[]{tfl1.getText() };
-                listaValid = rep.read( Cliente.class, sqlWhere, param);
+                listaValid = rep.read( entPla.getClass(), sqlWhere, tipo, param);
                 if (listaValid.size() > 0){
                     return "Dni ya fue registrado antes";
                 }
@@ -228,8 +233,9 @@ public class ClienteEdita extends JDialog implements EditaJDialog {
             case UPDATE:
                 rep = new EntidadRepositoryRepositoryBaseDatos();
                 sqlWhere = "(dni = ? ) ";
+                tipo = new Class[]{Info.getClase(entPla.getDni())};
                 param = new Object[]{tfl1.getText() };
-                listaValid = rep.read( Cliente.class, sqlWhere, param);
+                listaValid = rep.read( entPla.getClass(), sqlWhere, tipo, param);
                 if (listaValid.size() == 0){
                     return "Dni no existe";
                 }

@@ -105,4 +105,5 @@ public class Conversion {
             return 0L;
         }
     }
+
 }

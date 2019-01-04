@@ -3,6 +3,7 @@ package test.java.com.wonen.veterinaria;
 import main.java.com.wonen.veterinaria.model.*;
 import main.java.com.wonen.veterinaria.repository.EntidadRepository;
 import main.java.com.wonen.veterinaria.repository.EntidadRepositoryRepositoryBaseDatos;
+import main.java.com.wonen.veterinaria.service.Info;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -98,11 +99,12 @@ public class EntidadRepositoryBaseDatosTest {
         listaA.add(new Producto("AA1", "ninguno", 7.5, TipoProducto.ARTICULO));
         listaA.add(new Producto("AB001", "cicatrizante", 10.5, TipoProducto.ARTICULO));
         EntidadRepository rep = new EntidadRepositoryRepositoryBaseDatos();
+        Class[] tipo = {String.class};
         Object[] param = new Object[]{"ARTICULO"};
 
         //Accion
 
-        List<Producto> listaB = rep.read( Producto.class, "tipoproducto = ?", param);
+        List<Producto> listaB = rep.read( Producto.class, "tipoproducto = ?", tipo,param);
 
         //Resultado
         Assertions.assertIterableEquals(listaA, listaB);

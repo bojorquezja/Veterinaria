@@ -5,6 +5,7 @@ import main.java.com.wonen.veterinaria.model.Mascota;
 import main.java.com.wonen.veterinaria.model.TipoCliente;
 import main.java.com.wonen.veterinaria.repository.EntidadRepository;
 import main.java.com.wonen.veterinaria.repository.EntidadRepositoryRepositoryBaseDatos;
+import main.java.com.wonen.veterinaria.service.Info;
 import main.java.com.wonen.veterinaria.views.comun.*;
 
 import javax.swing.*;
@@ -178,36 +179,48 @@ public class ClienteLista extends JDialog implements ListaJDialog {
         relColor.put(TipoCliente.FRECUENTE, Color.CYAN);
         relColor.put(TipoCliente.NORMAL, Color.WHITE);
         relColor.put(TipoCliente.VIP, Color.GREEN);
-        tbl1.getColumnModel().getColumn(0).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 6, relColor ));
-        tbl1.getColumnModel().getColumn(1).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 6, relColor ));
-        tbl1.getColumnModel().getColumn(2).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 6, relColor ));
-        tbl1.getColumnModel().getColumn(3).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 6, relColor ));
-        tbl1.getColumnModel().getColumn(4).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 6, relColor ));
-        tbl1.getColumnModel().getColumn(5).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 6, relColor ));
-        tbl1.getColumnModel().getColumn(6).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 6, relColor ));
-        tbl1.getColumnModel().getColumn(7).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 6, relColor ));
+        Map<Object, Color> relColor2 = new HashMap<>();
+        relColor2.put(TipoCliente.MAYORISTA, Color.ORANGE);
+        relColor2.put(TipoCliente.FRECUENTE, Color.CYAN);
+        relColor2.put(TipoCliente.NORMAL, Color.WHITE);
+        relColor2.put(TipoCliente.VIP, Color.GREEN);
+        tbl1.getColumnModel().getColumn(0).setCellRenderer(new EstiloCeldaJTable(null, null, 6, relColor2, 6, relColor ));
+        tbl1.getColumnModel().getColumn(1).setCellRenderer(new EstiloCeldaJTable(null, null, 6, relColor2, 6, relColor ));
+        tbl1.getColumnModel().getColumn(2).setCellRenderer(new EstiloCeldaJTable(null, null, 6, relColor2, 6, relColor ));
+        tbl1.getColumnModel().getColumn(3).setCellRenderer(new EstiloCeldaJTable(null, null, 6, relColor2, 6, relColor ));
+        tbl1.getColumnModel().getColumn(4).setCellRenderer(new EstiloCeldaJTable(null, null, 6, relColor2, 6, relColor ));
+        tbl1.getColumnModel().getColumn(5).setCellRenderer(new EstiloCeldaJTable(null, null, 6, relColor2, 6, relColor ));
+        tbl1.getColumnModel().getColumn(6).setCellRenderer(new EstiloCeldaJTable(null, null, 6, relColor2, 6, relColor ));
+        tbl1.getColumnModel().getColumn(7).setCellRenderer(new EstiloCeldaJTable(null, null, 6, relColor2, 6, relColor ));
         //tbl1.getColumnModel().getColumn(3).setCellRenderer(new EstiloCeldaJTable());
+        tbl1.setDefaultEditor(Object.class, null);
     }
 
     @Override
     public void alBuscar() {
         //MODIFICAR
         List<Cliente> listaBus;
+        Cliente entPla = new Cliente();
         EntidadRepository rep = new EntidadRepositoryRepositoryBaseDatos();
         String sqlWhere = "(dni like ? or ? = '%%') " +
                 "and (nombre like ? or ? = '%%') " +
                 "and (tipoCliente = ? or ? = '(Todos)')";
+        Class[] tipo = {Info.getClase(entPla.getDni()), Info.getClase(entPla.getDni()),
+                Info.getClase(entPla.getNombre()), Info.getClase(entPla.getNombre()),
+                cbo1.getSelectedItem().getClass(), cbo1.getSelectedItem().getClass()};
         Object[] param = {"%" + tfl1.getText() + "%", "%" + tfl1.getText() + "%",
                 "%" + tfl2.getText() + "%", "%" + tfl2.getText() + "%",
                 cbo1.getSelectedItem() , cbo1.getSelectedItem()};
-        listaBus = rep.read( Cliente.class, sqlWhere, param);
+        listaBus = rep.read( entPla.getClass(), sqlWhere, tipo, param);
 
         DefaultTableModel tableModel = (DefaultTableModel) tbl1.getModel();
         tableModel.setRowCount(0);
         for (Cliente ent : listaBus){
+            Mascota entPla2 = new Mascota();
             String sqlWhere2 = "propietario = ?";
+            Class[] tipo2 = {Info.getClase(entPla2.getPropietario().getDni())};
             Object[] param2 = {ent.getDni()};
-            List<Mascota> mascotasLista = rep.read( Mascota.class, sqlWhere2, param2);
+            List<Mascota> mascotasLista = rep.read( entPla2.getClass(), sqlWhere2, tipo2, param2);
             String strMascotas = "";
             for (Mascota masc : mascotasLista){
                 strMascotas += masc.getNombre() + ", ";
@@ -265,9 +278,7 @@ public class ClienteLista extends JDialog implements ListaJDialog {
     public void alSeleccionar() {
         //MODIFICAR
         if (tbl1.getSelectedRow() >= 0) {
-            EntidadRepository rep = new EntidadRepositoryRepositoryBaseDatos();
-            Cliente ent = rep.read( Cliente.class, tbl1.getValueAt(tbl1.getSelectedRow(),0)); //PK
-            this.retorno = ent;
+            this.retorno = tbl1.getValueAt(tbl1.getSelectedRow(),0);
             dispose();
         }else{
             JOptionPane.showMessageDialog(null, "Seleccione dato valido");

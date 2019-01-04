@@ -3,6 +3,7 @@ package main.java.com.wonen.veterinaria.views;
 import main.java.com.wonen.veterinaria.model.*;
 import main.java.com.wonen.veterinaria.repository.EntidadRepository;
 import main.java.com.wonen.veterinaria.repository.EntidadRepositoryRepositoryBaseDatos;
+import main.java.com.wonen.veterinaria.service.Info;
 import main.java.com.wonen.veterinaria.views.comun.*;
 
 import javax.swing.*;
@@ -166,6 +167,11 @@ public class ProductoLista extends JDialog implements ListaJDialog {
         Object[] cbotext = UtilitariosSwing.arrEnumConTodos(TipoProducto.class);
         DefaultComboBoxModel comboBoxModel = new DefaultComboBoxModel(cbotext);
         cbo1.setModel(comboBoxModel);
+        cbo1.setEnabled(true);
+        if (this.valEntidad != null){
+            cbo1.setSelectedItem(this.valEntidad);
+            cbo1.setEnabled(false);
+        }
         //tbl1
         DefaultTableModel tableModel = new DefaultTableModel(0,4);
         Object[] cabecera = new Object[]{"Codigo", "Descripcion", "Precio Soles", "Tipo Producto"};
@@ -175,24 +181,34 @@ public class ProductoLista extends JDialog implements ListaJDialog {
         relColor.put(TipoProducto.ARTICULO, Color.WHITE);
         relColor.put(TipoProducto.SERVICIO, Color.CYAN);
         relColor.put(TipoProducto.ACTIVO, Color.YELLOW);
-        tbl1.getColumnModel().getColumn(0).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 3, relColor ));
-        tbl1.getColumnModel().getColumn(1).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 3, relColor ));
-        tbl1.getColumnModel().getColumn(2).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 3, relColor ));
-        tbl1.getColumnModel().getColumn(3).setCellRenderer(new EstiloCeldaJTable(null, null, 0, null, 3, relColor ));
+        Map<Object, Color> relColor2 = new HashMap<>();
+        relColor2.put(TipoProducto.ARTICULO, Color.BLACK);
+        relColor2.put(TipoProducto.SERVICIO, Color.BLACK);
+        relColor2.put(TipoProducto.ACTIVO, Color.BLACK);
+        tbl1.getColumnModel().getColumn(0).setCellRenderer(new EstiloCeldaJTable(null, null, 3, relColor2, 3, relColor ));
+        tbl1.getColumnModel().getColumn(1).setCellRenderer(new EstiloCeldaJTable(null, null, 3, relColor2, 3, relColor ));
+        tbl1.getColumnModel().getColumn(2).setCellRenderer(new EstiloCeldaJTable(null, null, 3, relColor2, 3, relColor ));
+        tbl1.getColumnModel().getColumn(3).setCellRenderer(new EstiloCeldaJTable(null, null, 3, relColor2, 3, relColor ));
+        tbl1.setDefaultEditor(Object.class, null);
     }
 
     @Override
     public void alBuscar() {
         //MODIFICAR
         List<Producto> listaBus;
+        Producto entPla = new Producto();
         EntidadRepository rep = new EntidadRepositoryRepositoryBaseDatos();
         String sqlWhere = "(codigo like ? or ? = '%%') " +
                 "and (descripcion like ? or ? = '%%') " +
                 "and (tipoproducto = ? or ? = '(Todos)')";
+        Class[] tipo = {Info.getClase(entPla.getCodigo()), Info.getClase(entPla.getCodigo()),
+                Info.getClase(entPla.getDescripcion()), Info.getClase(entPla.getDescripcion()),
+                cbo1.getSelectedItem().getClass(), cbo1.getSelectedItem().getClass()};
         Object[] param = {"%" + tfl1.getText() + "%", "%" + tfl1.getText() + "%",
                 "%" + tfl2.getText() + "%", "%" + tfl2.getText() + "%",
                 cbo1.getSelectedItem() , cbo1.getSelectedItem()};
-        listaBus = rep.read( Producto.class, sqlWhere, param);
+
+        listaBus = rep.read( entPla.getClass(), sqlWhere, tipo, param);
 
         DefaultTableModel tableModel = (DefaultTableModel) tbl1.getModel();
         tableModel.setRowCount(0);

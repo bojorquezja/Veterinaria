@@ -103,7 +103,7 @@ public class EntidadRepositoryRepositoryBaseDatos implements EntidadRepository {
     }
 
     @Override
-    public <E> List<E> read(Class claEnt, String sqlParamWhere, Object[] sqlParamStringValor) {
+    public <E> List<E> read(Class claEnt, String sqlParamWhere, Class[]sqlParamTipo, Object[]sqlParamValor) {
         List<E> listaEnt = new ArrayList<>();
         String nomTabla = this.nombreTabla(claEnt);
         String camposSelect = this.camposTabla(claEnt);
@@ -114,10 +114,8 @@ public class EntidadRepositoryRepositoryBaseDatos implements EntidadRepository {
 
         try (Connection con = BaseDeDatos.getConnection();
              PreparedStatement stat = con.prepareStatement(sql);){
-            int contPos = 0;
-            for (Object elem : sqlParamStringValor) {
-                contPos++;
-                this.setParamQuery(stat, contPos, elem.getClass().getSimpleName(), elem);
+            for (int i = 0 ; i < sqlParamValor.length; i++){
+                this.setParamQuery(stat, i+1, sqlParamTipo[i].getSimpleName(), sqlParamValor[i]);
             }
             stat.setFetchSize(100);
             try (ResultSet rs = stat.executeQuery()) {
@@ -176,7 +174,7 @@ public class EntidadRepositoryRepositoryBaseDatos implements EntidadRepository {
     }
 
     @Override
-    public long update(Class claEnt, String sqlParamSet, String sqlParamWhere, Object[] sqlParamStringValor) {
+    public long update(Class claEnt, String sqlParamSet, String sqlParamWhere, Class[]sqlParamTipo, Object[]sqlParamValor) {
         //TODO
         //addBatch() and executeBatch()
         return 0;
@@ -211,7 +209,7 @@ public class EntidadRepositoryRepositoryBaseDatos implements EntidadRepository {
     }
 
     @Override
-    public long delete(Class claEnt, String sqlParamWhere, Object[] sqlParamStringValor) {
+    public long delete(Class claEnt, String sqlParamWhere, Class[]sqlParamTipo, Object[]sqlParamValor) {
         //TODO
         //addBatch() and executeBatch()
         return 0;

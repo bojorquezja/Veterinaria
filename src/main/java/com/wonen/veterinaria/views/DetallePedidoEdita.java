@@ -7,6 +7,7 @@ import main.java.com.wonen.veterinaria.model.TipoProducto;
 import main.java.com.wonen.veterinaria.repository.EntidadRepository;
 import main.java.com.wonen.veterinaria.repository.EntidadRepositoryRepositoryBaseDatos;
 import main.java.com.wonen.veterinaria.service.Conversion;
+import main.java.com.wonen.veterinaria.service.Info;
 import main.java.com.wonen.veterinaria.views.comun.*;
 import org.jdesktop.swingx.JXDatePicker;
 
@@ -157,6 +158,7 @@ public class DetallePedidoEdita extends JDialog implements EditaJDialog {
                     this.accesoControlResto(false);
                     this.setTitle("Ver registro");
                     btn8.setText("Aceptar");
+                    btn8.setVisible(false);
                     btn9.setText("Cancelar");
                     return null;
                 }else{
@@ -254,8 +256,10 @@ public class DetallePedidoEdita extends JDialog implements EditaJDialog {
     public String errorAlValidarDatosEntidad(){
         //MODIFICAR
         List<DetallePedido> listaValid;
+        DetallePedido entPla = new DetallePedido();
         EntidadRepository rep;
         String sqlWhere;
+        Class[] tipo;
         Object[] param;
         int maxItem = ((Pedido) otrosParam[0]).getCodigo() * 1000;
 
@@ -263,8 +267,9 @@ public class DetallePedidoEdita extends JDialog implements EditaJDialog {
             case INSERT:
                 rep = new EntidadRepositoryRepositoryBaseDatos();
                 sqlWhere = "(codpedido = ? ) ";
+                tipo = new Class[]{Info.getClase(((Pedido) entTfl1).getCodigo())};
                 param = new Object[]{((Pedido) entTfl1).getCodigo() };
-                listaValid = rep.read( DetallePedido.class, sqlWhere, param);
+                listaValid = rep.read( entPla.getClass(), sqlWhere, tipo, param);
                 for (DetallePedido detP : listaValid){
                     if (maxItem < detP.getItem()){
                         maxItem = detP.getItem();

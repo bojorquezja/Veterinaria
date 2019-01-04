@@ -5,6 +5,7 @@ import main.java.com.wonen.veterinaria.model.*;
 import main.java.com.wonen.veterinaria.repository.EntidadRepository;
 import main.java.com.wonen.veterinaria.repository.EntidadRepositoryRepositoryBaseDatos;
 import main.java.com.wonen.veterinaria.service.Conversion;
+import main.java.com.wonen.veterinaria.service.Info;
 import main.java.com.wonen.veterinaria.views.comun.*;
 
 import javax.swing.*;
@@ -146,6 +147,7 @@ public class MascotaEdita extends JDialog implements EditaJDialog {
                     this.accesoControlResto(false);
                     this.setTitle("Ver registro");
                     btn8.setText("Aceptar");
+                    btn8.setVisible(false);
                     btn9.setText("Cancelar");
                     return null;
                 }else{
@@ -198,7 +200,9 @@ public class MascotaEdita extends JDialog implements EditaJDialog {
         ClienteLista dialog = new ClienteLista();
         Object respuesta = dialog.showConfirmJDialog(ModoLista.SELECT_CRUD, null, null);
         if (respuesta != null){
-            Cliente ent = (Cliente) respuesta;
+            String cod = (String) respuesta;
+            EntidadRepository rep = new EntidadRepositoryRepositoryBaseDatos();
+            Cliente ent = rep.read( Cliente.class, cod); //PK
             tfl5.setText(ent.getNombre());
             entTfl5 = ent;
         }
@@ -246,8 +250,10 @@ public class MascotaEdita extends JDialog implements EditaJDialog {
     public String errorAlValidarDatosEntidad(){
         //MODIFICAR
         List<Mascota> listaValid;
+        Mascota entPla = new Mascota();
         EntidadRepository rep;
         String sqlWhere;
+        Class[] tipo;
         Object[] param;
         if (tfl1.getText().length() ==0){
             return "Codigo en blanco";
@@ -257,8 +263,9 @@ public class MascotaEdita extends JDialog implements EditaJDialog {
             case INSERT:
                 rep = new EntidadRepositoryRepositoryBaseDatos();
                 sqlWhere = "(codigo = ? ) ";
+                tipo = new Class[]{Info.getClase(entPla.getCodigo())};
                 param = new Object[]{Integer.parseInt(tfl1.getText()) };
-                listaValid = rep.read( Mascota.class, sqlWhere, param);
+                listaValid = rep.read( entPla.getClass(), sqlWhere, tipo, param);
                 if (listaValid.size() > 0){
                     return "Codigo ya fue registrado antes";
                 }
@@ -266,8 +273,9 @@ public class MascotaEdita extends JDialog implements EditaJDialog {
             case UPDATE:
                 rep = new EntidadRepositoryRepositoryBaseDatos();
                 sqlWhere = "(codigo = ? ) ";
+                tipo = new Class[]{Info.getClase(entPla.getCodigo())};
                 param = new Object[]{Integer.parseInt(tfl1.getText()) };
-                listaValid = rep.read( Mascota.class, sqlWhere, param);
+                listaValid = rep.read( entPla.getClass(), sqlWhere, tipo, param);
                 if (listaValid.size() == 0){
                     return "Codigo no existe";
                 }
